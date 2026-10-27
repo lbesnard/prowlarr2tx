@@ -17,6 +17,52 @@ Put one file per job in `~/.config/prowlarr2tx/jobs/` (see
 | `transmission.*` | `host` (name or URL such as `https://tx.example.org`), `port` (default 9091, or 443 for https), `protocol`/`path` (optional), `username`, `password`, `download_dir` |
 | `search.*` | `query`, `min_grabs`, `max_results` |
 
+### Finding `api_key`, `indexer_id` and `category_id`
+
+These values are specific to **your** Prowlarr instance, so you must look them up.
+Both IDs are sent to Prowlarr's `/api/v1/search` as `indexerIds` and `categories`.
+
+**`api_key`**: Prowlarr > *Settings > General > Security > API Key*.
+
+**`indexer_id`**: the numeric ID Prowlarr assigned when you added the indexer. It is
+not shown in the main list, so query the API:
+
+```sh
+curl -s -H "X-Api-Key: $KEY" http://prowlarr.example:9696/api/v1/indexer \
+  | jq -r '.[] | "\(.id)\t\(.name)"'
+```
+
+IDs are per-installation: the same tracker has a different ID on another setup, and
+deleting and re-adding an indexer gives it a new ID.
+
+**`category_id`**: a Newznab/Torznab category number. The standard ones are the same
+everywhere:
+
+| id | category | id | category |
+| --- | --- | --- | --- |
+| 1000 | Console | 5000 | TV |
+| 2000 | Movies | 6000 | XXX |
+| 3000 | Audio | 7000 | Books |
+| 4000 | PC | 8000 | Other |
+
+Each has sub-categories (e.g. `2040` Movies/HD, `5030` TV/SD, `1000` Console incl. its
+children). The tracker's *own* custom categories (IDs of `100000` and above) are
+specific to that indexer and your setup. To list what an indexer supports:
+
+```sh
+curl -s -H "X-Api-Key: $KEY" http://prowlarr.example:9696/api/v1/indexer/<indexer_id> \
+  | jq -r '.capabilities.categories[] | "\(.id)\t\(.name)"'
+```
+
+A `category_id` the indexer does not support returns
+no results, so if a job finds "0 items", check the pair first. A quick test in the
+Prowlarr *Search* page with the same indexer, category and query should list what the
+job will see.
+
+Only one indexer and one category per job: create several job files for more.
+`min_grabs` only has an effect if the indexer reports grab counts (usually
+private trackers; many public ones report none, so nothing passes the threshold).
+
 The API key can instead be set with `PROWLARR2TX_API_KEY_<JOBNAME>` (job name upper-cased).
 
 ## Usage

@@ -10,6 +10,7 @@ Layout (XDG by default, each directory overridable for containers):
 import json
 import os
 import re
+from urllib.parse import urlsplit
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -51,6 +52,8 @@ class Job:
     tx_username: str
     tx_password: str
     download_dir: str
+    tx_protocol: str = "http"
+    tx_path: str = "/transmission/rpc"
     timeout: int = 90
     interval_hours: float = 1.0
     state_path: Path = field(default=None)
@@ -61,6 +64,24 @@ def _require(section, key, where):
         return section[key]
     except (KeyError, TypeError):
         raise ConfigError(f"{where}: missing '{key}'") from None
+
+
+def parse_transmission(tx, where):
+    """Accept host as a bare name or a URL like https://host[:port][/rpc/path]."""
+    host = str(_require(tx, "host", where))
+    protocol = tx.get("protocol", "http")
+    path = tx.get("path", "/transmission/rpc")
+    port = tx.get("port")
+    if "://" in host:
+        parts = urlsplit(host)
+        protocol = parts.scheme
+        host = parts.hostname or ""
+        port = port or parts.port
+        if parts.path.strip("/"):
+            path = parts.path
+    if protocol not in ("http", "https") or not host:
+        raise ConfigError(f"{where}: invalid transmission host/protocol")
+    return host, int(port or (443 if protocol == "https" else 9091)), protocol, path
 
 
 def load_job(path, name=None):
@@ -76,6 +97,7 @@ def load_job(path, name=None):
     tx = _require(raw, "transmission", where)
     search = _require(raw, "search", where)
 
+    tx_host, tx_port, tx_protocol, tx_path = parse_transmission(tx, where)
     env_key = "PROWLARR2TX_API_KEY_" + re.sub(r"\W", "_", name).upper()
     api_key = os.environ.get(env_key) or _require(prowlarr, "api_key", where)
 
@@ -89,8 +111,10 @@ def load_job(path, name=None):
         query=_require(search, "query", where),
         min_grabs=int(search.get("min_grabs", 0)),
         max_results=int(search.get("max_results", 100)),
-        tx_host=_require(tx, "host", where),
-        tx_port=int(tx.get("port", 9091)),
+        tx_host=tx_host,
+        tx_port=tx_port,
+        tx_protocol=tx_protocol,
+        tx_path=tx_path,
         tx_username=tx.get("username"),
         tx_password=tx.get("password"),
         download_dir=_require(tx, "download_dir", where),

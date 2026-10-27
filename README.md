@@ -14,7 +14,7 @@ Put one file per job in `~/.config/prowlarr2tx/jobs/` (see
 | `interval_hours` | how often the daemon runs this job (default 1) |
 | `state` | name of the state file, default = job name. Jobs using the same name share history, so two indexers never download the same item twice |
 | `prowlarr.*` | `url`, `api_key`, `indexer_id`, `category_id`, `timeout` |
-| `transmission.*` | `host`, `port`, `username`, `password`, `download_dir` |
+| `transmission.*` | `host` (name or URL such as `https://tx.example.org`), `port` (default 9091, or 443 for https), `protocol`/`path` (optional), `username`, `password`, `download_dir` |
 | `search.*` | `query`, `min_grabs`, `max_results` |
 
 The API key can instead be set with `PROWLARR2TX_API_KEY_<JOBNAME>` (job name upper-cased).

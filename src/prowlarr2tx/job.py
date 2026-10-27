@@ -68,6 +68,8 @@ def run_job(job, session=None, client=None):
     client = client or Client(
         host=job.tx_host,
         port=job.tx_port,
+        protocol=job.tx_protocol,
+        path=job.tx_path,
         username=job.tx_username,
         password=job.tx_password,
     )

@@ -38,6 +38,15 @@ prowlarr2tx run bfunk        # one job (name or path to a .json)
 prowlarr2tx daemon           # all jobs forever, on their intervals
 ```
 
+### Tab completion
+
+Subcommands, options and job names (`prowlarr2tx run <TAB>`) complete. Add to `~/.zshrc`
+(or `~/.bashrc`, using `bash`):
+
+```sh
+eval "$(prowlarr2tx completion zsh)"
+```
+
 State lives in `~/.local/state/prowlarr2tx/<state>.json` and is written
 atomically (a full disk can no longer empty it). A corrupt state file is moved
 to `*.corrupt` and the job refuses to run rather than starting from scratch.

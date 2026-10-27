@@ -70,3 +70,16 @@ def test_api_key_redacted():
     rec = logging.LogRecord("x", logging.INFO, "", 0, "GET http://h/1/download?apikey=SECRET&link=z", (), None)
     RedactFilter().filter(rec)
     assert "SECRET" not in rec.getMessage()
+
+
+def test_job_name_completion(tmp_path):
+    import argparse
+    import shutil
+    from prowlarr2tx.cli import complete_jobs
+
+    example = Path(__file__).parent.parent / "examples" / "job.example.json"
+    for name in ("alpha", "beta"):
+        shutil.copy(example, tmp_path / f"{name}.json")
+    ns = argparse.Namespace(jobs_dir=str(tmp_path), jobs=["beta"])
+    assert complete_jobs("", ns) == ["alpha"]
+    assert complete_jobs("z", ns) == []

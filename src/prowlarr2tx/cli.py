@@ -1,9 +1,12 @@
+# PYTHON_ARGCOMPLETE_OK
 import argparse
 import signal
 import sys
 import threading
 import time
 from pathlib import Path
+
+import argcomplete
 
 from . import __version__
 from .config import ConfigError, config_dir, discover_jobs, load_job
@@ -47,6 +50,22 @@ def _run_safely(job):
     except Exception as exc:
         log.error("Job failed: %s: %s", type(exc).__name__, exc)
     return False
+
+
+def complete_jobs(prefix, parsed_args, **_):
+    try:
+        names = [j.name for j in discover_jobs(parsed_args.jobs_dir)]
+    except Exception:
+        return []
+    return [n for n in names if n.startswith(prefix) and n not in parsed_args.jobs]
+
+
+def cmd_completion(args):
+    code = argcomplete.shellcode(["prowlarr2tx"], shell="bash")
+    if args.shell == "zsh":
+        print("autoload -U +X bashcompinit && bashcompinit")
+    print(code)
+    return 0
 
 
 def cmd_run(args):
@@ -96,8 +115,16 @@ def main(argv=None):
         ("list", cmd_list, "list configured jobs"),
     ):
         p = sub.add_parser(name, help=help_)
-        p.add_argument("jobs", nargs="*", help="job names or .json paths (default: all)")
+        p.add_argument(
+            "jobs", nargs="*", help="job names or .json paths (default: all)"
+        ).completer = complete_jobs
         p.set_defaults(fn=fn)
+
+    p = sub.add_parser("completion", help="print shell completion script")
+    p.add_argument("shell", choices=["bash", "zsh"])
+    p.set_defaults(fn=cmd_completion)
+
+    argcomplete.autocomplete(parser)
 
     args = parser.parse_args(argv)
     setup_logging(args.log_level)

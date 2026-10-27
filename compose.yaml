@@ -1,0 +1,17 @@
+services:
+  prowlarr2tx:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: prowlarr2tx:latest
+    container_name: prowlarr2tx
+    restart: unless-stopped
+    # Host networking so LAN names like *.home / *.lan resolve as on the host.
+    # Alternative: drop this and add `dns:` or `extra_hosts:` entries.
+    network_mode: host
+    volumes:
+      - ${PROWLARR2TX_CONFIG:-./config}:/config:ro   # jobs/*.json
+      - ${PROWLARR2TX_STATE:-./state}:/state         # download history per job
+      - ${PROWLARR2TX_LOGS:-./logs}:/logs            # rotating logs

@@ -1,0 +1,14 @@
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+build/
+dist/
+
+# local runtime data and secrets
+/config/
+/state/
+/logs/
+*.log
+*.corrupt
+*.tmp

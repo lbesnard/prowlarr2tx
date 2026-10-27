@@ -1,0 +1,23 @@
+{
+  "interval_hours": 1,
+  "state": "my-downloads",
+  "prowlarr": {
+    "url": "http://prowlarr.example:9696",
+    "api_key": "CHANGE_ME",
+    "indexer_id": 1,
+    "category_id": 1000,
+    "timeout": 90
+  },
+  "transmission": {
+    "host": "transmission.example",
+    "port": 9091,
+    "username": null,
+    "password": null,
+    "download_dir": "/data/downloads"
+  },
+  "search": {
+    "query": "Switch",
+    "min_grabs": 90,
+    "max_results": 300
+  }
+}

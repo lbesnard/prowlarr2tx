@@ -21,8 +21,17 @@ The API key can instead be set with `PROWLARR2TX_API_KEY_<JOBNAME>` (job name up
 
 ## Usage
 
+Install with [uv](https://docs.astral.sh/uv/) (recommended, isolated and on your PATH):
+
 ```sh
-pip install .
+uv tool install git+https://github.com/lbesnard/prowlarr2tx   # from GitHub
+uv tool install .                                             # from a local clone
+uv tool upgrade prowlarr2tx                                   # later, to update
+```
+
+Or run without installing: `uvx --from . prowlarr2tx list`. Plain `pip install .` also works.
+
+```sh
 prowlarr2tx list
 prowlarr2tx run              # all jobs, once
 prowlarr2tx run bfunk        # one job (name or path to a .json)
@@ -56,5 +65,5 @@ One-off run in the container: `docker compose run --rm prowlarr2tx run`.
 ## Tests
 
 ```sh
-pip install -e '.[test]' && pytest
+uv run --extra test pytest
 ```
